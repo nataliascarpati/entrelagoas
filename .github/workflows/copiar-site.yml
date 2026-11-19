@@ -1,0 +1,47 @@
+name: Copiar site do WordPress
+
+# Rodar enquanto entrelagoas.com ainda aponta para a hospedagem antiga.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  copiar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar todas as páginas e arquivos
+        run: |
+          rm -rf site && mkdir -p site && cd site
+          wget --mirror --page-requisites --adjust-extension --convert-links \
+               --no-parent -e robots=off --restrict-file-names=windows \
+               --no-host-directories --domains=entrelagoas.com \
+               --reject-regex '(add-to-cart|add_to_wishlist|/carrinho|/minha-conta|/finalizar|/checkout|/wp-json|/feed/|xmlrpc|wp-login|[?&](s|orderby|filter_|min_price|max_price|replytocom)=|/comments/)' \
+               --wait=0.3 --tries=3 --timeout=30 \
+               --user-agent="Mozilla/5.0 (vitrine entrelagoas)" \
+               https://entrelagoas.com/ https://entrelagoas.com/loja/ https://entrelagoas.com/colecoes/ \
+               https://entrelagoas.com/sobre/ https://entrelagoas.com/contato/ || echo "wget terminou com avisos ($?)"
+          cd ..
+          du -sh site; find site -name '*.html' | wc -l
+      - name: Limpar e transformar em vitrine
+        run: python3 ferramentas/limpar.py site
+      - name: Arquivos de apoio
+        run: |
+          echo "entrelagoas.com" > site/CNAME
+          touch site/.nojekyll
+          [ -f site/404.html ] || cp site/index.html site/404.html
+      - name: Salvar no repositório
+        run: |
+          git config user.name "copiador"
+          git config user.email "copiador@users.noreply.github.com"
+          git add -A site relatorio-limpeza.txt
+          git commit -m "Cópia estática do site Entre Lagoas" || echo "Nada novo"
+          git push
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publicar.yml --ref main || true
