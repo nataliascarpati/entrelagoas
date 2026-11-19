@@ -24,7 +24,7 @@ SUSPEITO = re.compile(
 CSS_EXTRA = """
 <style id="vitrine">
 .ast-header-woo-cart,.ast-site-header-cart,.woocommerce-mini-cart,.ast-header-account,
-.ast-header-search,.jet-ajax-search,.yith-wcwl-add-to-wishlist,.yith-add-to-wishlist-button-block,
+.ast-header-search,.astra-search-shortcode,.ast-search-menu-icon,.jet-ajax-search,.yith-wcwl-add-to-wishlist,.yith-add-to-wishlist-button-block,
 #cookie-law-info-bar,.cli-modal,.cli-modal-backdrop,.cky-consent-container,
 form.cart,.single_add_to_cart_button,.add_to_cart_button,.ajax_add_to_cart,
 .woocommerce-product-details__short-description + .quantity,.mc4wp-form,
